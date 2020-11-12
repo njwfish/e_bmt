@@ -1,0 +1,42 @@
+{
+    "arms": [10, 30, 100, 300],
+    "rounds": 0.95,
+    "trials": 100,
+    "seed": 322,
+    "alpha": 0.05,
+    "bandits": [{
+       "name": "constant_2",
+       "null_signal": 0,
+       "arm_signal": "constant",
+       "arm_kwargs": {"signal": 0.5, "non_null_param": 2},
+       "arm_dist": "gaussian"
+    }, {
+       "name": "constant_log",
+       "null_signal": 0,
+       "arm_signal": "constant",
+       "arm_kwargs": {"signal": 0.5, "non_null_param": "log"},
+       "arm_dist": "gaussian"
+    }, {
+       "name": "constant_sqrt",
+       "null_signal": 0,
+       "arm_signal": "constant",
+       "arm_kwargs": {"signal": 0.5, "non_null_param": "sqrt"},
+       "arm_dist": "gaussian"
+    }],
+    "agents": [{
+       "name": "JJ",
+       "sampler": {
+            "name": "PUCB",
+            "kwargs": {}
+       },
+       "rejector": {
+            "name": "EBHNew",
+            "kwargs": {
+                "correction": "su",
+                "evidence": "LCB",
+                "evidence_kwargs": {"mean": 0}
+            }
+       }
+    }]
+
+}

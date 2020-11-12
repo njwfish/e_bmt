@@ -1,0 +1,15 @@
+*.*
+/**/__pycache__/
+results/
+figures/
+docs/_build/
+docs/_autosummary/
+!.gitignore
+!environment.yml
+!requirements.txt
+!readme.md
+!*.json
+!*.py
+!*.sh
+!*.rst
+!*.bat

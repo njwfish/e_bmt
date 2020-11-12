@@ -1,0 +1,8 @@
+name: bandit
+channels:
+  - https://conda.anaconda.org/gurobi
+  - defaults
+dependencies:
+  - python=3.7
+  - jupyter
+  - scipy

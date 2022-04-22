@@ -29,7 +29,7 @@
     "agents": [{
        "name": "e-BH",
        "sampler": {
-            "name": "Uniform",
+            "name": "PUCB",
             "kwargs": {}
        },
        "rejector": {

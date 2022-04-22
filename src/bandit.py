@@ -107,7 +107,7 @@ def bernoulli_arm(signal: float) -> float:
 
     :return: random sample from bernoulli with mean :code:`signal`
     """
-    return np.random.binomial(1, p)
+    return np.random.binomial(1, signal)
 
 
 RoundInfo = Tuple[

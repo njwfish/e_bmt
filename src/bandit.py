@@ -98,6 +98,17 @@ def gaussian_arm(signal: float) -> float:
     """
     return np.random.normal(signal, 1)
 
+@arm_dist('bernoulli')
+def bernoulli_arm(signal: float) -> float:
+    """Sample Gaussian random variable with mean= :code:`signal` and variance
+    1.
+
+    :param signal: signal parameter of arm
+
+    :return: random sample from bernoulli with mean :code:`signal`
+    """
+    return np.random.binomial(1, p)
+
 
 RoundInfo = Tuple[
     int, int, float, 'Bandit',

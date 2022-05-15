@@ -7,22 +7,22 @@
     "alpha": 0.05,
     "bandits": [{
        "name": "constant_2",
-       "null_signal": 0,
+       "null_signal": 0.5,
        "arm_signal": "constant",
-       "arm_kwargs": {"signal": 0.5, "non_null_param": 2},
-       "arm_dist": "gaussian"
+       "arm_kwargs": {"signal": 0.1, "non_null_param": 2},
+       "arm_dist": "bernoulli"
     }, {
        "name": "constant_log",
-       "null_signal": 0,
+       "null_signal": 0.5,
        "arm_signal": "constant",
-       "arm_kwargs": {"signal": 0.5, "non_null_param": "log"},
-       "arm_dist": "gaussian"
+       "arm_kwargs": {"signal": 0.1, "non_null_param": "log"},
+       "arm_dist": "bernoulli"
     }, {
        "name": "constant_sqrt",
-       "null_signal": 0,
+       "null_signal": 0.5,
        "arm_signal": "constant",
-       "arm_kwargs": {"signal": 0.5, "non_null_param": "sqrt"},
-       "arm_dist": "gaussian"
+       "arm_kwargs": {"signal": 0.1, "non_null_param": "sqrt"},
+       "arm_dist": "bernoulli"
     }],
     "agents": [{
        "name": "PUCB_EBH",
@@ -35,7 +35,7 @@
             "kwargs": {
                 "evidence": "PMH",
                 "evidence_kwargs": {
-                    "mean": 0,
+                    "mean": 0.5,
                     "var": 1,
                     "lambda_strat": "Hoeffding",
                     "lambda_kwargs": { "var": 1 }

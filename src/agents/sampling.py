@@ -7,6 +7,8 @@ from agents.base import Sampler, Rejector, sampling_strategy, rejection_strategy
 from agents.evidence.base import _EVIDENCE_REGISTRY
 from agents.phi import _PHI_REGISTRY
 from utils import create_register_fn
+import math
+from scipy.linalg import block_diag
 
 _CAL_REGISTRY = {}
 _E_REGISTRY = {}
@@ -128,6 +130,96 @@ class EUCB(Sampler):
         m[rejected_indices] = True
         a = np.ma.array(self.ucb, mask=m)
         return a.argmax()
+
+# todo i think we prob want like
+# Exp3 instead but im just gonna
+# mess with this for now.
+
+@sampling_strategy('GEUCB')
+class GEUCB(Sampler):
+    def _init_(self, sequence='pm', sequence_kwargs={}, G=None):
+        self.sequence = sequence
+        self.sequence_kwargs = sequence_kwargs
+        self.G = G
+
+    def reset(self):
+        self.ucb = np.zeros(self.arms)
+        self.evidence = np.zeros(self.arms)
+        self.lambda_sum = np.zeros(self.arms)
+        self.cgf_sum = np.zeros(self.arms)
+        self.ts = np.zeros(self.arms)
+        self.round = 0
+        arms_per = 10
+        combos = math.ceil(self.arms / arms_per)
+        self.G = block_diag(*[np.ones((1, arms_per - max(arms_per * (i + 1) - self.arms, 0))) for i in range(combos)])
+
+    def update_state(self, i, x):
+        self.ts[i] += 1
+        lam = lambda_t(self.ts[i], self.alpha)
+        self.evidence[i] += lam * x
+        self.lambda_sum[i] += lam
+        self.cgf_sum[i] += np.square(lam) / 2
+        self.ucb[i] = (self.evidence[i] + np.log(2 / self.alpha) +
+                       self.cgf_sum[i]) / self.lambda_sum[i]
+        self.round += 1
+    
+    def select_arm(self, rejected_indices):
+        if self.G is not None:
+            if self.round < self.G.shape[0]:
+                return self.round
+        if self.round < self.arms:
+            return self.round
+
+        m = np.zeros(self.arms, dtype=bool)
+        m[rejected_indices] = True
+        a = np.ma.array(self.ucb, mask=m)
+        if self.G is not None:
+            arms = np.where((self.G @ a).argmax())
+        else:
+            arms = a.argmax()
+        return arms
+    
+@sampling_strategy('GPUCB')
+class GPUCB(Sampler):
+    def __init__(self, phi='kaufmann', G=None):
+        self.phi = phi
+        self.G = G
+
+    def reset(self):
+        self.ucb = np.zeros(self.arms)
+        self.means = np.zeros(self.arms)
+        self.ts = np.zeros(self.arms)
+        self.round = 0
+        arms_per = 10
+        combos = math.ceil(self.arms / arms_per)
+        self.G = block_diag(*[np.ones((1, arms_per - max(arms_per * (i + 1) - self.arms, 0))) for i in range(combos)])
+        self.graph_rounds = 0
+
+
+    def update_state(self, i, x):
+        self.ts[i] += 1
+        self.means[i] = (self.means[i] * (self.ts[i] - 1) + x) / self.ts[i]
+        self.ucb[i] = self.means[i] + _PHI_REGISTRY[self.phi](self.ts[i],
+                                                              self.alpha)
+        self.round += 1
+
+    def select_arm(self, rejected_indices):
+        if self.G is not None and self.graph_rounds < self.G.shape[0]:
+            arms = np.argwhere(self.G[self.graph_rounds, :]).flatten()
+            self.graph_rounds += 1
+            return arms
+        elif self.G is None and self.round < self.arms:
+            return self.round
+        m = np.zeros(self.arms, dtype=bool)
+        m[rejected_indices] = True
+        a = np.ma.array(self.ucb, mask=m)
+        if self.G is not None:
+            pull = np.ma.dot(self.G, a).argmax()
+            arms = np.argwhere(self.G[pull, :]).flatten()
+            # arms = arms[~np.isin(arms, rejected_indices)]
+        else:
+            arms = a.argmax()
+        return arms
 
 
 @rejection_strategy('EBHNew')
@@ -335,7 +427,7 @@ class PUCB(Sampler):
         m[rejected_indices] = True
         a = np.ma.array(self.ucb, mask=m)
         return np.argmax(a)
-
+    
 
 @rejection_strategy('PBH')
 class PBH(Sampler):

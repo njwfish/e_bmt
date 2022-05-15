@@ -100,8 +100,7 @@ def gaussian_arm(signal: float) -> float:
 
 @arm_dist('bernoulli')
 def bernoulli_arm(signal: float) -> float:
-    """Sample Gaussian random variable with mean= :code:`signal` and variance
-    1.
+    """Sample Bernoulli random variable with mean= :code:`signal`.
 
     :param signal: signal parameter of arm
 
@@ -230,15 +229,13 @@ class Bandit:
         }
 
         def do_round(round_idx):
-
             if verbose:
                 print(round_idx, agent.sampler.ucb)
             arm = agent.select_arm()
             if self.graph_bandit:
-                next_arm_gap = 10
-                for i in range(self.arms // next_arm_gap):
-                    reward = self.pull_arm(arm)
-                    agent.update_state(arm, reward)
+                for i in arm:
+                    reward = self.pull_arm(i)
+                    agent.update_state(i, reward)
             else:
                 reward = self.pull_arm(arm)
                 agent.update_state(arm, reward)

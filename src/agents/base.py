@@ -113,8 +113,9 @@ class Agent:
         self.sampler.set_params(arms, alpha, sampler_seed)
         self.rejector.set_params(arms, alpha, rejector_seed)
 
-    def select_arm(self) -> int:
-        return self.sampler.select_arm(self.rejector.reject())
+    def select_arm(self):
+        arm = self.sampler.select_arm(self.rejector.reject())
+        return arm
 
     def update_state(self, idx: int, reward: float) -> None:
         self.sampler.update_state(idx, reward)
